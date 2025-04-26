@@ -14,7 +14,7 @@ type LivreService interface {
 	GetLivre() []livre.Livre
 	FindById(id uint) (*livre.Livre, error)
 	CreateLivre(livre *livre.Livre) (*livre.Livre, error)
-	UpdateLivre(livre *livre.Livre) (*livre.Livre, error)
+	UpdateLivre(id uint , livre *livre.Livre) (*livre.Livre, error)
 	DeleteLivre(id uint) error
 }
 
@@ -46,6 +46,6 @@ func (l *livreService) GetLivre() []livre.Livre {
 }
 
 // UpdateLivre implements LivreService.
-func (l *livreService) UpdateLivre(livre *livre.Livre) (*livre.Livre, error) {
-	return l.repo.UpdateLivre(livre)
+func (l *livreService) UpdateLivre(id uint ,livre *livre.Livre) (*livre.Livre, error) {
+	return l.repo.UpdateLivre(id , livre)
 }

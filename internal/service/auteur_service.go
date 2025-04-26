@@ -11,7 +11,7 @@ type auteurService struct {
 
 type AuteurService interface {
 	GetAuteur() []auteur.Auteur
-	FindById(id uint) *auteur.Auteur
+	FindById(id uint) (*auteur.Auteur, error)
 	CreateAuteur(a *auteur.Auteur) (*auteur.Auteur, error)
 	UpdateAuteur(id uint, a *auteur.Auteur) (*auteur.Auteur, error)
 	DeleteAuteur(id uint) error
@@ -35,7 +35,7 @@ func (a *auteurService) DeleteAuteur(id uint) error {
 }
 
 // FindById implements AuteurService.
-func (a *auteurService) FindById(id uint) *auteur.Auteur {
+func (a *auteurService) FindById(id uint) (*auteur.Auteur, error) {
 	return a.repo.FindById(id)
 }
 

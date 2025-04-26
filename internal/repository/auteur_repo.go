@@ -14,7 +14,7 @@ type auteurRepo struct {
 
 type AuteurRepository interface{
 	GetAuteur() []auteur.Auteur
-	FindById(id uint) *auteur.Auteur
+	FindById(id uint) (*auteur.Auteur, error)
 	CreateAuteur(a *auteur.Auteur) (*auteur.Auteur, error)
 	UpdateAuteur(id uint,a *auteur.Auteur) (*auteur.Auteur, error)
 	DeleteAuteur(id uint) (error)
@@ -47,12 +47,12 @@ func (repo *auteurRepo) GetAuteur() []auteur.Auteur{
 	return auteurs
 }
 
-func (repo *auteurRepo) FindById(id uint) *auteur.Auteur{
+func (repo *auteurRepo) FindById(id uint) (*auteur.Auteur , error){
 	var auteur *auteur.Auteur
 	if err := repo.conn.Find(&auteur, id).Error ; err != nil{
-		return nil
+		return nil , err
 	}
-	return auteur
+	return auteur , nil
 }
 
 func (repo *auteurRepo) CreateAuteur(a *auteur.Auteur) (*auteur.Auteur, error){
@@ -66,8 +66,8 @@ func (repo *auteurRepo) UpdateAuteur(id uint, a *auteur.Auteur) (*auteur.Auteur,
 
 	var existing auteur.Auteur
 	// find the auteur with this id
-	if err := repo.conn.First(&existing , id) ; err != nil {
-		return nil , err.Error
+	if err := repo.conn.First(&existing , id).Error ; err != nil {
+		return nil , err
 	}
 
 	if err := repo.conn.Model(&existing).Updates(a).Error; err != nil{

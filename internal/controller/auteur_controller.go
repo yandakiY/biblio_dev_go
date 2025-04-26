@@ -15,7 +15,7 @@ type AuteurController interface {
 	Create(ctx *gin.Context) (*auteur.Auteur, error)
 	Update(id uint, ctx *gin.Context) (*auteur.Auteur, error)
 	Get() []auteur.Auteur
-	FindById(id uint) (*auteur.Auteur)
+	FindById(id uint) (*auteur.Auteur , error)
 	Delete(id uint) error
 }
 
@@ -50,12 +50,12 @@ func (a *auteurController) Delete(id uint) error {
 }
 
 // FindById implements AuteurController.
-func (a *auteurController) FindById(id uint) (*auteur.Auteur) {
-	auteur := a.service.FindById(id)
-	if auteur != nil{
-		return auteur
+func (a *auteurController) FindById(id uint) (*auteur.Auteur , error) {
+	auteur , err := a.service.FindById(id)
+	if err != nil{
+		return nil , err
 	}
-	return nil
+	return auteur , nil
 }
 
 // Get implements AuteurController.
@@ -67,7 +67,7 @@ func (a *auteurController) Get() []auteur.Auteur {
 func (a *auteurController) Update(id uint, ctx *gin.Context) (*auteur.Auteur, error) {
 	var auteur auteur.Auteur
 
-	if err := ctx.ShouldBindJSON(auteur); err != nil {
+	if err := ctx.ShouldBindJSON(&auteur); err != nil {
 		return nil , err
 	}
 

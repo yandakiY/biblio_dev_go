@@ -16,7 +16,7 @@ type LivreRepository interface{
 	GetLivre() []livre.Livre
 	FindById(id uint) (*livre.Livre, error)
 	CreateLivre(livre *livre.Livre) (*livre.Livre , error)
-	UpdateLivre(livre *livre.Livre) (*livre.Livre, error)
+	UpdateLivre(id uint , livre *livre.Livre) (*livre.Livre, error)
 	DeleteLivre(id uint) error
 }
 
@@ -40,7 +40,7 @@ func NewLivreRepository() LivreRepository{
 
 func (repo *livreRepo) GetLivre() []livre.Livre{
 	var livres []livre.Livre
-	if err := repo.conn.Set("auto_preload", true).Find(&livres); err != nil {
+	if err := repo.conn.Set("auto_preload", true).Find(&livres).Error; err != nil {
 		return nil
 	}
 	return livres
@@ -61,11 +61,18 @@ func (repo *livreRepo) CreateLivre(livre *livre.Livre) (*livre.Livre , error){
 	return livre, nil
 } 
 
-func (repo *livreRepo) UpdateLivre(livre *livre.Livre) (*livre.Livre, error){
-	if err := repo.conn.Save(livre).Error; err != nil {
+func (repo *livreRepo) UpdateLivre(id uint , l *livre.Livre) (*livre.Livre, error){
+
+	// find the livre with id
+	var existing *livre.Livre
+	if err := repo.conn.First(&existing , id).Error ; err != nil {
 		return nil , err
 	}
-	return livre, nil
+
+	if err := repo.conn.Model(&existing).Updates(l).Error ; err != nil {
+		return nil , err
+	}
+	return existing, nil
 }
 
 func (repo *livreRepo) DeleteLivre(id uint) error {

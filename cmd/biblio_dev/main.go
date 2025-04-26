@@ -49,6 +49,24 @@ func main(){
 			}
 		})
 
+		routerAuteur.GET("/:id" , func(ctx *gin.Context) {
+
+			id, _ := strconv.ParseUint(ctx.Param("id"), 10 ,32)
+
+			livre , err := auteurController.FindById(uint(id))
+			if err != nil {
+				ctx.JSON(http.StatusNotFound , gin.H{
+					"status": http.StatusNotFound,
+					"items":nil,
+				})
+			} else {
+				ctx.JSON(http.StatusOK , gin.H{
+					"status": http.StatusOK,
+					"items": livre,
+				})
+			}
+		})
+
 		routerAuteur.POST("" , func(ctx *gin.Context) {
 
 			res , err := auteurController.Create(ctx)
@@ -112,32 +130,115 @@ func main(){
 
 	routerLivre := server.Group("/api/livre")
 	{	
-		// Auteur - Endpoint
+		// livre - Endpoint
+
 		routerLivre.GET("" , func(ctx *gin.Context) {
-			ctx.JSON(http.StatusOK , gin.H{
-				"message":"Get Endpoint /api",
-			})
+			print("Get List of all livre\n")
+			livres := livreController.Get()
+
+			if len(livres) != 0{
+				ctx.JSON(http.StatusOK , gin.H{
+					"items":livres,
+					"status":http.StatusOK,
+				})
+			} else {
+				ctx.JSON(http.StatusOK , gin.H{
+					"items":nil,
+					"status":http.StatusNotFound,
+				})
+			}
+		})
+
+		routerLivre.GET("/:id" , func(ctx *gin.Context) {
+			print("Get List of all livre\n")
+
+			id , _ := strconv.ParseUint(ctx.Param("id"), 10 , 32)
+			res , err := livreController.FindById(uint(id))
+
+			if err != nil{
+				ctx.JSON(http.StatusNotFound , gin.H{
+					"items":err.Error(),
+					"status":http.StatusNotFound,
+				})
+			} else {
+				ctx.JSON(http.StatusOK , gin.H{
+					"items":res,
+					"status":http.StatusOK,
+				})
+			}
 		})
 
 		routerLivre.POST("" , func(ctx *gin.Context) {
-			ctx.JSON(http.StatusCreated, gin.H{
-				"message":"Post Endpoint /api",
-			})
+
+			_ , err := livreController.Create(ctx)
+
+			if err != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{
+					"message":err.Error(),
+					"status":http.StatusBadRequest,
+				})
+			} else {
+				ctx.JSON(http.StatusOK , gin.H{
+					"message":"Operation succesfull",
+					"status":http.StatusOK,
+				})
+			}
 		})
 
 		routerLivre.PUT("/:id", func(ctx *gin.Context) {
 
+			print("Update Livre with Id")
+
 			id , _ := strconv.ParseUint(ctx.Param("id") , 10, 32)
-			print(id)
-			ctx.JSON(http.StatusOK, gin.H{
-				"message":"Update Endpoint /api",
-			})
+			// check if livre exist
+			_, err := livreController.FindById(uint(id))
+
+			if err != nil {
+				ctx.JSON(http.StatusNotFound , gin.H{
+					"message":fmt.Sprintf("Item not found with id %d", id),
+					"status":http.StatusNotFound,
+				})
+			} 
+			
+			res , err := livreController.Update(uint(id) , ctx)
+			
+			if err != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{
+					"err": err.Error(),
+					"status":http.StatusBadRequest,
+				})
+			} else {
+				ctx.JSON(http.StatusOK, gin.H{
+					"message":"Operation succesfull",
+					"status":http.StatusOK,
+					"items": res,
+				})
+			}
 		})
 
-		routerLivre.DELETE("", func(ctx *gin.Context) {
-			ctx.JSON(http.StatusOK, gin.H{
-				"message":"Delete Endpoint /api",
-			})
+		routerLivre.DELETE("/:id", func(ctx *gin.Context) {
+
+			id , err := strconv.ParseUint(ctx.Param("id"), 10 ,32)
+
+			if err != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{
+					"error": err.Error(),
+					"status":http.StatusBadRequest,
+				})
+			}
+
+			err = livreController.Delete(uint(id))
+			if err != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{
+					"error":err.Error(),
+					"status":http.StatusBadRequest,
+				})
+			} else {
+				ctx.JSON(http.StatusOK, gin.H{
+					"message":"Operation Successfull",
+					"status":http.StatusOK,
+				})
+			}
 		})
 	}
 

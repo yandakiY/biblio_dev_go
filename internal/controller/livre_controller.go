@@ -13,9 +13,9 @@ type livreController struct {
 
 type LivreController interface {
 	Create(ctx *gin.Context) (*livre.Livre, error)
-	Update(ctx *gin.Context) (*livre.Livre, error)
+	Update(id uint , ctx *gin.Context) (*livre.Livre, error)
 	Get() []livre.Livre
-	FindById(id uint) *livre.Livre
+	FindById(id uint) (*livre.Livre, error)
 	Delete(id uint) error
 }
 
@@ -50,13 +50,13 @@ func (l *livreController) Delete(id uint) error {
 }
 
 // FindById implements LivreController.
-func (l *livreController) FindById(id uint) *livre.Livre {
+func (l *livreController) FindById(id uint) (*livre.Livre, error) {
 	
 	res , err := l.service.FindById(id)
 	if err != nil {
-		return nil
+		return nil , err
 	}
-	return res
+	return res , nil
 }
 
 // Get implements LivreController.
@@ -65,14 +65,14 @@ func (l *livreController) Get() []livre.Livre {
 }
 
 // Update implements LivreController.
-func (l *livreController) Update(ctx *gin.Context) (*livre.Livre, error) {
+func (l *livreController) Update(id uint ,ctx *gin.Context) (*livre.Livre, error) {
 	
 	var livre livre.Livre
-	if err := ctx.ShouldBindJSON(livre); err != nil {
+	if err := ctx.ShouldBindJSON(&livre); err != nil {
 		return nil, err
 	}
 
-	res , err := l.service.UpdateLivre(&livre)
+	res , err := l.service.UpdateLivre(id , &livre)
 	if err != nil {
 		return nil , err
 	}
