@@ -228,15 +228,15 @@ func main(){
 			}
 
 			err = livreController.Delete(uint(id))
-			if err != nil {
-				ctx.JSON(http.StatusBadRequest, gin.H{
-					"error":err.Error(),
-					"status":http.StatusBadRequest,
-				})
-			} else {
+			if err == nil {
 				ctx.JSON(http.StatusOK, gin.H{
 					"message":"Operation Successfull",
 					"status":http.StatusOK,
+				})
+			} else {
+				ctx.JSON(http.StatusBadRequest, gin.H{
+					"error":err.Error(),
+					"status":http.StatusBadRequest,
 				})
 			}
 		})

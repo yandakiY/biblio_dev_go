@@ -76,7 +76,7 @@ func (repo *livreRepo) UpdateLivre(id uint , l *livre.Livre) (*livre.Livre, erro
 }
 
 func (repo *livreRepo) DeleteLivre(id uint) error {
-	res := repo.conn.Delete(&livre.Livre{}, id)
+	res := repo.conn.Unscoped().Delete(&livre.Livre{}, id)
 	
 	if res.Error != nil {
 		return res.Error
@@ -85,6 +85,9 @@ func (repo *livreRepo) DeleteLivre(id uint) error {
 	if res.RowsAffected == 0 {
 		return fmt.Errorf("aucun livre avec l'id %d", id)
 	}
+	fmt.Println("Error:", res.Error)
+	fmt.Println("RowsAffected:", res.RowsAffected)
+
 
 	return nil
 }
