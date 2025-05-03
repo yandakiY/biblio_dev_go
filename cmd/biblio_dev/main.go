@@ -57,7 +57,7 @@ func main(){
 			if err != nil {
 				ctx.JSON(http.StatusNotFound , gin.H{
 					"status": http.StatusNotFound,
-					"items":nil,
+					"error":err.Error(),
 				})
 			} else {
 				ctx.JSON(http.StatusOK , gin.H{
@@ -69,7 +69,7 @@ func main(){
 
 		routerAuteur.POST("" , func(ctx *gin.Context) {
 
-			res , err := auteurController.Create(ctx)
+			_ , err := auteurController.Create(ctx)
 
 			if err != nil {
 				ctx.JSON(http.StatusBadRequest, gin.H{
@@ -81,7 +81,6 @@ func main(){
 				ctx.JSON(http.StatusCreated, gin.H{
 					"status":http.StatusCreated,
 					"message":"Operation succesfull",
-					"items": res,
 				})
 			}
 		})
@@ -91,14 +90,18 @@ func main(){
 
 			res , err := auteurController.Update(uint(id) , ctx)
 
-			if err != nil {
+			if err != nil && err.Error() == "Auteur a modifier inexistant" {
+				ctx.JSON(http.StatusBadRequest, gin.H{
+					"status":http.StatusNotFound,
+					"message":err.Error(),
+				})
+			} else if err != nil && err.Error() != "Auteur a modifier inexistant" {
 				ctx.JSON(http.StatusBadRequest, gin.H{
 					"status":http.StatusBadRequest,
 					"message":err.Error(),
-					"items":nil,
 				})
 			} else {
-				ctx.JSON(http.StatusCreated, gin.H{
+				ctx.JSON(http.StatusOK, gin.H{
 					"status":http.StatusOK,
 					"message":"Operation succesfull",
 					"items": res,
@@ -112,17 +115,20 @@ func main(){
 
 			err := auteurController.Delete(uint(id))
 
-			if err != nil {
+			if err != nil && err.Error() == "Auteur inexistant" {
 				ctx.JSON(http.StatusBadRequest, gin.H{
 					"status":http.StatusBadRequest,
 					"message":err.Error(),
-					"items":nil,
+				})
+			} else if err != nil && err.Error() != "Auteur inexistant" {
+				ctx.JSON(http.StatusInternalServerError, gin.H{
+					"status":http.StatusInternalServerError,
+					"message":err.Error(),
 				})
 			} else {
-				ctx.JSON(http.StatusCreated, gin.H{
+				ctx.JSON(http.StatusOK, gin.H{
 					"status":http.StatusOK,
 					"message":"Operation succesfull",
-					"items": nil,
 				})
 			}
 		})
@@ -133,7 +139,6 @@ func main(){
 		// livre - Endpoint
 
 		routerLivre.GET("" , func(ctx *gin.Context) {
-			print("Get List of all livre\n")
 			livres := livreController.Get()
 
 			if len(livres) != 0{
@@ -144,20 +149,19 @@ func main(){
 			} else {
 				ctx.JSON(http.StatusOK , gin.H{
 					"items":nil,
-					"status":http.StatusNotFound,
+					"status":http.StatusOK,
 				})
 			}
 		})
 
 		routerLivre.GET("/:id" , func(ctx *gin.Context) {
-			print("Get List of all livre\n")
 
 			id , _ := strconv.ParseUint(ctx.Param("id"), 10 , 32)
 			res , err := livreController.FindById(uint(id))
 
-			if err != nil{
+			if err != nil {
 				ctx.JSON(http.StatusNotFound , gin.H{
-					"items":err.Error(),
+					"error":err.Error(),
 					"status":http.StatusNotFound,
 				})
 			} else {
@@ -190,24 +194,20 @@ func main(){
 			print("Update Livre with Id")
 
 			id , _ := strconv.ParseUint(ctx.Param("id") , 10, 32)
-			// check if livre exist
-			_, err := livreController.FindById(uint(id))
-
-			if err != nil {
-				ctx.JSON(http.StatusNotFound , gin.H{
-					"message":fmt.Sprintf("Item not found with id %d", id),
-					"status":http.StatusNotFound,
-				})
-			} 
 			
 			res , err := livreController.Update(uint(id) , ctx)
 			
-			if err != nil {
-				ctx.JSON(http.StatusBadRequest, gin.H{
+			if err != nil && err.Error() == "Livre a modifier inexistant" {
+				ctx.JSON(http.StatusNotFound, gin.H{
 					"err": err.Error(),
+					"status":http.StatusNotFound,
+				})
+			} else if err != nil && err.Error() != "Livre a modifier inexistant" {
+				ctx.JSON(http.StatusBadRequest, gin.H{
+					"error":err.Error(),
 					"status":http.StatusBadRequest,
 				})
-			} else {
+			}else {
 				ctx.JSON(http.StatusOK, gin.H{
 					"message":"Operation succesfull",
 					"status":http.StatusOK,
@@ -220,23 +220,22 @@ func main(){
 
 			id , err := strconv.ParseUint(ctx.Param("id"), 10 ,32)
 
-			if err != nil {
-				ctx.JSON(http.StatusBadRequest, gin.H{
-					"error": err.Error(),
-					"status":http.StatusBadRequest,
-				})
-			}
-
 			err = livreController.Delete(uint(id))
-			if err == nil {
+			
+			if err != nil && err.Error() == "Livre inexistant" {
+				ctx.JSON(http.StatusNotFound, gin.H{
+					"error": err.Error(),
+					"status":http.StatusNotFound,
+				})
+			} else if err != nil && err.Error() != "Livre inexistant" {
+				ctx.JSON(http.StatusInternalServerError, gin.H{
+					"error": err.Error(),
+					"status":http.StatusInternalServerError,
+				})
+			} else {
 				ctx.JSON(http.StatusOK, gin.H{
 					"message":"Operation Successfull",
 					"status":http.StatusOK,
-				})
-			} else {
-				ctx.JSON(http.StatusBadRequest, gin.H{
-					"error":err.Error(),
-					"status":http.StatusBadRequest,
 				})
 			}
 		})

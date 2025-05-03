@@ -51,6 +51,10 @@ func (repo *livreRepo) FindById(id uint) (*livre.Livre, error){
 	if err := repo.conn.Find(&livre, id).Error; err != nil{
 		return nil , err
 	}
+
+	if livre.ID == 0 {
+		return nil , fmt.Errorf("Livre introuvable")
+	}
 	return livre, nil
 }
 
@@ -65,8 +69,12 @@ func (repo *livreRepo) UpdateLivre(id uint , l *livre.Livre) (*livre.Livre, erro
 
 	// find the livre with id
 	var existing *livre.Livre
-	if err := repo.conn.First(&existing , id).Error ; err != nil {
+	if err := repo.conn.Find(&existing , id).Error ; err != nil {
 		return nil , err
+	}
+
+	if existing.ID == 0{
+		return nil , fmt.Errorf("Livre a modifier inexistant")
 	}
 
 	if err := repo.conn.Model(&existing).Updates(l).Error ; err != nil {
@@ -83,11 +91,8 @@ func (repo *livreRepo) DeleteLivre(id uint) error {
 	}
 
 	if res.RowsAffected == 0 {
-		return fmt.Errorf("aucun livre avec l'id %d", id)
+		return fmt.Errorf("Livre inexistant")
 	}
-	fmt.Println("Error:", res.Error)
-	fmt.Println("RowsAffected:", res.RowsAffected)
-
 
 	return nil
 }

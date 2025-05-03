@@ -52,6 +52,11 @@ func (repo *auteurRepo) FindById(id uint) (*auteur.Auteur , error){
 	if err := repo.conn.Find(&auteur, id).Error ; err != nil{
 		return nil , err
 	}
+
+	if auteur.ID == 0{
+		return nil , fmt.Errorf("Auteur introuvable")
+	}
+
 	return auteur , nil
 }
 
@@ -64,28 +69,32 @@ func (repo *auteurRepo) CreateAuteur(a *auteur.Auteur) (*auteur.Auteur, error){
 
 func (repo *auteurRepo) UpdateAuteur(id uint, a *auteur.Auteur) (*auteur.Auteur, error){
 
-	var existing auteur.Auteur
+	var existing *auteur.Auteur
 	// find the auteur with this id
-	if err := repo.conn.First(&existing , id).Error ; err != nil {
+	if err := repo.conn.Find(&existing , id).Error ; err != nil {
 		return nil , err
+	}
+
+	if existing.ID == 0 {
+		return nil , fmt.Errorf("Auteur a modifier inexistant")
 	}
 
 	if err := repo.conn.Model(&existing).Updates(a).Error; err != nil{
 		return nil, err
 	}
-	return &existing, nil
+	return existing, nil
 }
 
 func (repo *auteurRepo) DeleteAuteur(id uint) (error){
 	
-	res := repo.conn.Delete(&auteur.Auteur{} ,id)
+	res := repo.conn.Unscoped().Delete(&auteur.Auteur{} ,id)
 
 	if res.Error != nil {
 		return res.Error
 	}
 
 	if res.RowsAffected == 0 {
-		return fmt.Errorf("aucun auteur avec l'id %d", id)
+		return fmt.Errorf("Auteur inexistant")
 	}
 	return nil
 }
