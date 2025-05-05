@@ -116,8 +116,8 @@ func main(){
 			err := auteurController.Delete(uint(id))
 
 			if err != nil && err.Error() == "Auteur inexistant" {
-				ctx.JSON(http.StatusBadRequest, gin.H{
-					"status":http.StatusBadRequest,
+				ctx.JSON(http.StatusNotFound, gin.H{
+					"status":http.StatusNotFound,
 					"message":err.Error(),
 				})
 			} else if err != nil && err.Error() != "Auteur inexistant" {

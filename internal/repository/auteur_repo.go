@@ -49,7 +49,7 @@ func (repo *auteurRepo) GetAuteur() []auteur.Auteur{
 
 func (repo *auteurRepo) FindById(id uint) (*auteur.Auteur , error){
 	var auteur *auteur.Auteur
-	if err := repo.conn.Find(&auteur, id).Error ; err != nil{
+	if err := repo.conn.Preload("Livres").Find(&auteur, id).Error ; err != nil{
 		return nil , err
 	}
 
